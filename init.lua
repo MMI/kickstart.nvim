@@ -140,6 +140,12 @@ do
   -- Decrease update time
   vim.o.updatetime = 250
 
+  -- Automatically re-read files that have changed underneath
+  vim.o.autoread = true
+  vim.api.nvim_create_autocmd({ 'BufEnter', 'CursorHold', 'CursorHoldI', 'FocusGained' }, {
+    command = 'checktime',
+  })
+
   -- Decrease mapped sequence wait time
   vim.o.timeoutlen = 300
 
@@ -304,9 +310,9 @@ do
         return
       end
 
-      if name == 'nvim-treesitter' then
-        if not ev.data.active then vim.cmd.packadd 'nvim-treesitter' end
-        vim.cmd 'TSUpdate'
+      if name == ‘nvim-treesitter’ then
+        if not ev.data.active then vim.cmd.packadd ‘nvim-treesitter’ end
+        vim.cmd ‘TSUpdate’
         return
       end
     end,
@@ -360,6 +366,7 @@ do
       topdelete = { text = '‾' }, ---@diagnostic disable-line: missing-fields
       changedelete = { text = '~' }, ---@diagnostic disable-line: missing-fields
     },
+<<<<<<< HEAD
   }
 
   -- Useful plugin to show you pending keybinds.
@@ -374,6 +381,37 @@ do
       { '<leader>t', group = '[T]oggle' },
       { '<leader>h', group = 'Git [H]unk', mode = { 'n', 'v' } }, -- Enable gitsigns recommended keymaps first
       { 'gr', group = 'LSP Actions', mode = { 'n' } },
+=======
+    ---@module 'conform'
+    ---@type conform.setupOpts
+    opts = {
+      notify_on_error = false,
+      format_on_save = function(bufnr)
+        -- You can specify filetypes to autoformat on save here:
+        local enabled_filetypes = {
+          -- lua = true,
+          -- python = true,
+        }
+        if enabled_filetypes[vim.bo[bufnr].filetype] then
+          return { timeout_ms = 500 }
+        else
+          return nil
+        end
+      end,
+      default_format_opts = {
+        lsp_format = 'fallback', -- Use external formatters if configured below, otherwise use LSP formatting. Set to `false` to disable LSP formatting entirely.
+      },
+      -- You can also specify external formatters in here.
+      formatters_by_ft = {
+        go = { 'goimports' },  -- or 'gofumpt'
+        -- rust = { 'rustfmt' },
+        -- Conform can also run multiple formatters sequentially
+        -- python = { "isort", "black" },
+        --
+        -- You can use 'stop_after_first' to run the first available formatter from the list
+        -- javascript = { "prettierd", "prettier", stop_after_first = true },
+      },
+>>>>>>> b2502fc (misc goodness -- enable auto session and file updates, etc)
     },
   }
 
@@ -441,6 +479,9 @@ do
 
   -- ... and there is more!
   --  Check out: https://github.com/nvim-mini/mini.nvim
+
+  vim.pack.add { gh 'rmagatti/auto-session' }
+  require('auto-session').setup {}
 end
 
 -- ============================================================
@@ -485,15 +526,11 @@ do
 
   -- See `:help telescope` and `:help telescope.setup()`
   require('telescope').setup {
-    -- You can put your default mappings / updates / etc. in here
-    --  All the info you're looking for is in `:help telescope.setup()`
-    --
-    -- defaults = {
-    --   mappings = {
-    --     i = { ['<c-enter>'] = 'to_fuzzy_refine' },
-    --   },
-    -- },
-    -- pickers = {}
+    defaults = {
+      mappings = {
+        i = { ['<c-g>'] = require('telescope.actions').delete_buffer },
+      },
+    },
     extensions = {
       ['ui-select'] = { require('telescope.themes').get_dropdown() },
     },
@@ -790,6 +827,7 @@ do
     },
     -- You can also specify external formatters in here.
     formatters_by_ft = {
+      go = { 'goimports' },
       -- rust = { 'rustfmt' },
       -- Conform can also run multiple formatters sequentially
       -- python = { "isort", "black" },
